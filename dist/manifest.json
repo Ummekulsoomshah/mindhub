@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name":"notes app",
+    "version":"1.0.0",
+    "description":"it aids students from unnesseray work",
+    "action":{
+      
+    "default_popup": "index.html",
+    "default_title":"Open"
+
+},
+"permissions":[
+    "scripting"
+]
+
+  
+}
