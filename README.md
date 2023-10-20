@@ -1,25 +1,8 @@
 # co42b487d95fbd5b5c8f9c4a8
 <!DOCTYPE html>
 <html>
-<head>
-    <style>
-        /* Add some basic CSS for styling */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h2 {
-            color: #0078d4;
-        }
-        ol {
-            list-style-type: decimal;
-            margin-left: 20px;
-        }
-        li {
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
+
+
 <body>
 
 <h2>Overview</h2>
