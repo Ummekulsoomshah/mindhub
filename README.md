@@ -1,19 +1,45 @@
 # co42b487d95fbd5b5c8f9c4a8
-Overview
-The React Vite Notes Chrome Extension is a lightweight note-taking application that runs directly within your web browser. This extension is built using React for the front-end and leverages Firebase for seamless data storage and synchronization. It's fast, responsive, and provides a user-friendly interface for effortless note-taking and organization.
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Add some basic CSS for styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #0078d4;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
 
-Usage:
-1.Click on the React Vite Notes icon in the Chrome toolbar to open the extension.
+<h2>Overview</h2>
 
-2.You'll be presented with a simple and clean note-taking interface.
+<p>The React Vite Notes Chrome Extension is a lightweight note-taking application that runs directly within your web browser. This extension is built using React for the front-end and leverages Firebase for seamless data storage and synchronization. It's fast, responsive, and provides a user-friendly interface for effortless note-taking and organization.</p>
 
-3.Start typing your notes.
+<h2>Usage:</h2>
 
-4.Use Markdown for formatting your notes.
+<ol>
+    <li>Click on the React Vite Notes icon in the Chrome toolbar to open the extension.</li>
+    <li>You'll be presented with a simple and clean note-taking interface.</li>
+    <li>Start typing your notes.</li>
+    <li>Use Markdown for formatting your notes.</li>
+    <li>Your notes are automatically saved and synchronized across all open tabs.</li>
+    <li>You can close the extension and reopen it from any tab to access your notes.</li>
+</ol>
 
-5.Your notes are automatically saved and synchronized across all open tabs.
+</body>
+</html>
 
-6.You can close the extension and reopen it from any tab to access your notes.
 Warning: Vite enforces using jsx syntax inside jsx/tsx files, so it will complain about that. Solution: rename `.js` files to `.jsx` :)
 
 Quick start:
