@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactMde from "react-mde";
 import Showdown from "showdown";
 import style from "../style.css";
@@ -6,8 +6,10 @@ import blob from "./blob.png";
 import SpeechToText from "./SpeexchToText";
 
 
+
 export default function Editor({ tempNoteText,setTempNoteText, darkMode }) {
   const [selectedTab, setSelectedTab] = React.useState("write");
+  const [speechResults, setSpeechResults] = useState({ interimResult: '', results: [] });
 
   const converter = new Showdown.Converter({
     tables: true,
@@ -16,11 +18,22 @@ export default function Editor({ tempNoteText,setTempNoteText, darkMode }) {
     tasklists: true,
   });
 
+  const updateSpeechResults = (interimResult, results ) => {
+    setSpeechResults({ interimResult, results });
+  };
 
+  // Combine speech-to-text results into a single string
+  const combinedResults = [...speechResults.results.map((result) => result.transcript), speechResults.interimResult].join(' ');
+
+  // Update tempNoteText with combined results
+  const updateTempNoteTextWithSpeech = () => {
+    setTempNoteText(combinedResults);
+  };
   return (
     <>
     <section className={darkMode ? "dark" : "pane editor"}>
-      {/* <img src={blob} alt="Blob Vector" className="moving-blob" /> */}
+    <SpeechToText updateSpeechResults={updateSpeechResults} />
+      <img src={blob} alt="Blob Vector" className="moving-blob" />
       
 
       <ReactMde
@@ -32,17 +45,15 @@ export default function Editor({ tempNoteText,setTempNoteText, darkMode }) {
         generateMarkdownPreview={(markdown) =>
           Promise.resolve(converter.makeHtml(markdown))
         }
-        minEditorHeight={80}
-        heightUnits="vh"
+        // minEditorHeight={80}
+        // heightUnits="vh"
         // className={style.light} // Apply the selected editor class
       />
 
     </section>
-    <SpeechToText/>
+    
     
     </>
   );
 }
-
-
 
