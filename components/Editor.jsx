@@ -3,7 +3,7 @@ import ReactMde from "react-mde";
 import Showdown from "showdown";
 import style from "../style.css";
 import blob from "./blob.png";
-import SpeechToText from "./SpeexchToText";
+import SpeechToText from "./speechToText";
 
 
 
