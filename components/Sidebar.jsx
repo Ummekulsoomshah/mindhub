@@ -13,7 +13,7 @@ export default function Sidebar(props) {
                 <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
                 <button
                     className="delete-btn"
-                    onClick={() => props.deleteNote(note.id)}
+                    onClick={(event) => props.deleteNote(event,note.id)}
                 >
                     <i className="gg-trash trash-icon"></i>
                 </button>
@@ -31,7 +31,7 @@ export default function Sidebar(props) {
                     </div>
                     <p className="toggler--dark">Dark</p>
                 </div>
-                <SpeechToText/>
+                {/* <SpeechToText/> */}
                 <h3>Notes</h3>
                 <button className="new-note" onClick={props.newNote}>+</button>
 
