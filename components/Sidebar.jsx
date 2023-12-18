@@ -1,5 +1,5 @@
 import React from "react"
-import SpeechToText from "./speechToText";
+// import SpeechToText from "./speechToText";
 
 
 export default function Sidebar(props) {

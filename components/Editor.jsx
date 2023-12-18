@@ -3,7 +3,7 @@ import ReactMde from "react-mde";
 import Showdown from "showdown";
 import "../style.css";
 import blob from "./blob.png";
-import SpeechToText from "./speechToText";
+// import SpeechToText from "./speechToText";
 import useSpeechToText from "react-hook-speech-to-text";
 
 export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
