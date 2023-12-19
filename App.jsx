@@ -14,21 +14,52 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
+ useEffect(() => {
+    // Fetch notes from Firebase on component mount
+    const unsubscribe = db.collection("notes").onSnapshot((snapshot) => {
+      const notesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNotes(notesData);
+    });
 
-  const createNewNote = () => {
+    return () => unsubscribe();
+  }, []);
+  // const createNewNote = () => {
+  //   const newNote = {
+  //     id: nanoid(),
+  //     body: "# Type your markdown note's title here",
+  //   };
+  //   setNotes((prevNotes) => [newNote, ...prevNotes]);
+  //   setCurrentNoteId(newNote.id);
+  // };
+
+  const createNewNote = async () => {
     const newNote = {
       id: nanoid(),
       body: "# Type your markdown note's title here",
     };
+
+    // Add the new note to Firebase
+    await db.collection("notes").doc(newNote.id).set(newNote);
+
+    // Update the local state
     setNotes((prevNotes) => [newNote, ...prevNotes]);
-    setCurrentNoteId(newNote.id);
   };
 
   const toggleDarkMode = () => {
     setDarkMode((prevMode) => !prevMode);
   };
 
-  const deleteNote = (noteId) => {
+  // const deleteNote = (noteId) => {
+  //   setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
+  // };
+  const deleteNote = async (noteId) => {
+    // Delete the note from Firebase
+    await db.collection("notes").doc(noteId).delete();
+
+    // Update the local state
     setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
   };
 
