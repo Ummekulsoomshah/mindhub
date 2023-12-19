@@ -3,16 +3,11 @@ import ReactMde from "react-mde";
 import Showdown from "showdown";
 import "../style.css";
 import blob from "./blob.png";
-import SpeechToText from "./speechToText";
+// import SpeechToText from "./speechToText";
 import useSpeechToText from "react-hook-speech-to-text";
 
-export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
+export default function Editor({ notes, setNotes, darkMode, currentNoteId }) {
   const [selectedTab, setSelectedTab] = React.useState("write");
-  const [speechResults, setSpeechResults] = useState({
-    interimResult: "",
-    results: [],
-  });
-
   const converter = new Showdown.Converter({
     tables: true,
     simplifiedAutoLink: true,
@@ -20,25 +15,7 @@ export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
     tasklists: true,
   });
 
-  const updateSpeechResults = (interimResult, results) => {
-    setSpeechResults({ interimResult, results });
-  };
-
-  // Combine speech-to-text results into a single string
-  const combinedResults = [
-    ...speechResults.results.map((result) => result.transcript),
-    speechResults.interimResult,
-  ].join(" ");
-
-  // Update tempNoteText with combined results
-  // const updateTempNoteTextWithSpeech = () => {
-  //   setTempNoteText(combinedResults);
-  // };
-
-  // console.log(combinedResults)
   const {
-    error,
-    interimResult,
     isRecording,
     results,
     setResults,
@@ -48,13 +25,31 @@ export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
     continuous: true,
     useLegacyResults: false,
   });
+  const onChangeValue = (value) => {
+    const existingNoteIndex = notes.findIndex(
+      (note) => note.id === currentNoteId
+    );
+    if (value === "") {
+    }
+    setNotes((prevNotes) => {
+      const updatedNotes = [...prevNotes];
+      updatedNotes[existingNoteIndex] = {
+        ...updatedNotes[existingNoteIndex],
+        body:
+          value || value === ""
+            ? value
+            : updatedNotes[existingNoteIndex].body +
+              " " +
+              results.map((result) => result.transcript).join(" ") +
+              " ",
+      };
+      return updatedNotes;
+    });
+  };
   useEffect(() => {
     if (isRecording && results && results.length > 0) {
-      const transcripts = results.map((result) => result.transcript).join(" ");
-      if (transcripts) {
-        setTempNoteText((prevNoteText) => prevNoteText + transcripts + " ");
-        setResults([]);
-      }
+      onChangeValue();
+      setResults([]);
     }
   }, [isRecording, results]);
 
@@ -65,20 +60,16 @@ export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
 
         <ReactMde
           imgurClientId={blob}
-          value={tempNoteText}
-          onChange={setTempNoteText}
+          value={notes.find((note) => note.id === currentNoteId)?.body || ""}
+          onChange={onChangeValue}
           selectedTab={selectedTab}
           onTabChange={setSelectedTab}
           generateMarkdownPreview={(markdown) =>
             Promise.resolve(converter.makeHtml(markdown))
           }
-          // minEditorHeight={80}
-          // heightUnits="vh"
-          // className={style.light} // Apply the selected editor class
         />
-        {/* <SpeechToTex /> */}
+
         <button onClick={isRecording ? stopSpeechToText : startSpeechToText}>
-          {/* //idhr apka mic wala log ayega, aur isRecording true hoga toh stopSpeechToText chalega, nhi toh ////startSpeechToText */}
           {isRecording ? "Stop" : "Start"}
         </button>
       </section>
