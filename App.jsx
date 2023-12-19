@@ -2,59 +2,63 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
 import Split from "react-split";
-import { nanoid } from "nanoid";
+import { onSnapshot ,addDoc,doc,deleteDoc} from "firebase/firestore";
+import { notesCollection ,db} from "./firebase"
 
 export default function App() {
-  const [notes, setNotes] = React.useState(
-    () => JSON.parse(localStorage.getItem("notes")) || []
-  );
-  const [currentNoteId, setCurrentNoteId] = React.useState(notes[0]?.id || "");
+  const [notes, setNotes] = React.useState([]);
+  const [currentNoteId, setCurrentNoteId] = React.useState("")
 
   const currentNote =
     notes.find((note) => note.id === currentNoteId) || notes[0];
 
-  React.useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
+    React.useEffect(() => {
+      const unsubscribe = onSnapshot(notesCollection, function(snapshot) {
+          // Sync up our local notes array with the snapshot data
+          const notesArr = snapshot.docs.map(doc => ({
+              ...doc.data(),
+              id: doc.id
+          }))
+          setNotes(notesArr)
+      })
+      return unsubscribe
+  }, [])
 
-  function createNewNote() {
+  async function createNewNote() {
     const newNote = {
-      id: nanoid(),
-      body: "# Type your markdown note's title here",
-    };
-    setNotes((prevNotes) => [newNote, ...prevNotes]);
-    setCurrentNoteId(newNote.id);
-  }
+        body: "# Type your markdown note's title here",
+        voice: "",
+    }
+    const newNoteRef = await addDoc(notesCollection, newNote)
+    setCurrentNoteId(newNoteRef.id)
+}
 
   // toggle func
-
+  React.useEffect(() => {
+    if (!currentNoteId) {
+        setCurrentNoteId(notes[0]?.id)
+    }
+}, [notes])
   const [darkMode, setDarkMode] = React.useState(false);
   const [tempNoteText, setTempNoteText] = useState("");
   function toggleDarkMode() {
     setDarkMode((prevMode) => !prevMode);
   }
 
-  function updateNote(text) {
-    setNotes((oldNotes) => {
-      const newArray = [];
-      for (let i = 0; i < oldNotes.length; i++) {
-        const oldNote = oldNotes[i];
-        if (oldNote.id === currentNoteId) {
-          // Put the most recently-modified note at the top
-          newArray.unshift({ ...oldNote, body: text });
-        } else {
-          newArray.push(oldNote);
-        }
-      }
-      return newArray;
-    });
+  async function updateNote(text) {
+    try {
+      const docRef = doc(db, "notes", currentNoteId);
+      await setDoc(docRef, { body: text}, {voice: tempNoteText }, { merge: true });
+      console.log("Note updated successfully!");
+    } catch (error) {
+      console.error("Error updating note:", error);
+    }
   }
-
-  function deleteNote(event, noteId) {
-    event.stopPropagation();
-    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
-  }
-
+  
+  async function deleteNote(noteId) {
+    const docRef = doc(db, "notes", noteId)
+    await deleteDoc(docRef)
+}
   // new interface
 //   console.log(currentNote);
 //   console.log(notes);
@@ -71,7 +75,6 @@ export default function App() {
             deleteNote={deleteNote}
             toggleDarkMode={toggleDarkMode}
           />
-          {currentNoteId && notes.length > 0 && (
             <Editor
               // toggle
               darkMode={darkMode}
@@ -80,7 +83,6 @@ export default function App() {
               tempNoteText={tempNoteText}
               setTempNoteText={setTempNoteText}
             />
-          )}
         </Split>
       ) : (
         <div className="no-notes">

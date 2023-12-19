@@ -6,7 +6,7 @@ import blob from "./blob.png";
 // import SpeechToText from "./speechToText";
 import useSpeechToText from "react-hook-speech-to-text";
 
-export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
+export default function Editor({ tempNoteText, setTempNoteText, darkMode,currentNote }) {
   const [selectedTab, setSelectedTab] = React.useState("write");
   const [speechResults, setSpeechResults] = useState({
     interimResult: "",
@@ -30,12 +30,6 @@ export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
     speechResults.interimResult,
   ].join(" ");
 
-  // Update tempNoteText with combined results
-  // const updateTempNoteTextWithSpeech = () => {
-  //   setTempNoteText(combinedResults);
-  // };
-
-  // console.log(combinedResults)
   const {
     error,
     interimResult,
@@ -65,21 +59,19 @@ export default function Editor({ tempNoteText, setTempNoteText, darkMode }) {
 
         <ReactMde
           imgurClientId={blob}
-          value={tempNoteText}
+          value={currentNote?.body}
           onChange={setTempNoteText}
           selectedTab={selectedTab}
           onTabChange={setSelectedTab}
           generateMarkdownPreview={(markdown) =>
             Promise.resolve(converter.makeHtml(markdown))
           }
-          // minEditorHeight={80}
-          // heightUnits="vh"
-          // className={style.light} // Apply the selected editor class
+          
         />
-        {/* <SpeechToTex /> */}
+       
         <button onClick={isRecording ? stopSpeechToText : startSpeechToText}>
-          {/* //idhr apka mic wala log ayega, aur isRecording true hoga toh stopSpeechToText chalega, nhi toh ////startSpeechToText */}
-          {isRecording ? "Stop" : "Start"}
+         
+          {isRecording ? "Stop Recording" : "Start Recording"}
         </button>
       </section>
     </>
