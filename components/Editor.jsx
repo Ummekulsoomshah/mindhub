@@ -5,6 +5,14 @@ import "../style.css";
 import blob from "./blob.png";
 // import SpeechToText from "./speechToText";
 import useSpeechToText from "react-hook-speech-to-text";
+import { notesCollection, db } from "../firebase";
+import {
+  onSnapshot,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export default function Editor({ notes, setNotes, darkMode, currentNoteId }) {
   const [selectedTab, setSelectedTab] = React.useState("write");
@@ -25,12 +33,11 @@ export default function Editor({ notes, setNotes, darkMode, currentNoteId }) {
     continuous: true,
     useLegacyResults: false,
   });
-  const onChangeValue = (value) => {
+  const onChangeValue = async (value) => {
     const existingNoteIndex = notes.findIndex(
       (note) => note.id === currentNoteId
     );
-    if (value === "") {
-    }
+  
     setNotes((prevNotes) => {
       const updatedNotes = [...prevNotes];
       updatedNotes[existingNoteIndex] = {
@@ -43,7 +50,17 @@ export default function Editor({ notes, setNotes, darkMode, currentNoteId }) {
               results.map((result) => result.transcript).join(" ") +
               " ",
       };
+
       return updatedNotes;
+    });
+    await updateDoc(doc(db, "notes", currentNoteId), {
+      body:
+        value || value === ""
+          ? value
+          : [...notes][existingNoteIndex].body +
+            " " +
+            results.map((result) => result.transcript).join(" ") +
+            " ",
     });
   };
   useEffect(() => {

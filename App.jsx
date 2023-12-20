@@ -1,31 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
 import Split from "react-split";
 import { nanoid } from "nanoid";
+import { onSnapshot, addDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
+import { notesCollection, db } from "./firebase";
 
 export default function App() {
-  const [notes, setNotes] = useState(
-    () => JSON.parse(localStorage.getItem("notes")) || []
-  );
-  const [currentNoteId, setCurrentNoteId] = React.useState(notes[0]?.id || "");
+  const [notes, setNotes] = useState([]);
+  const [currentNoteId, setCurrentNoteId] = React.useState("");
   const [darkMode, setDarkMode] = useState(false);
 
+  // useEffect(() => {
+  //   localStorage.setItem("notes", JSON.stringify(notes));
+  // }, [notes]);
   useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
- useEffect(() => {
-    // Fetch notes from Firebase on component mount
-    const unsubscribe = db.collection("notes").onSnapshot((snapshot) => {
-      const notesData = snapshot.docs.map((doc) => ({
-        id: doc.id,
+    const unsubscribe = onSnapshot(notesCollection, function (snapshot) {
+      const notesArr = snapshot.docs.map((doc) => ({
         ...doc.data(),
+        id: doc.id,
       }));
-      setNotes(notesData);
+      setNotes(notesArr);
     });
-
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
+  // console.log(notes);
+
   // const createNewNote = () => {
   //   const newNote = {
   //     id: nanoid(),
@@ -35,19 +35,21 @@ export default function App() {
   //   setCurrentNoteId(newNote.id);
   // };
 
-  const createNewNote = async () => {
+  async function createNewNote() {
     const newNote = {
-      id: nanoid(),
       body: "# Type your markdown note's title here",
     };
 
-    // Add the new note to Firebase
-    await db.collection("notes").doc(newNote.id).set(newNote);
-
-    // Update the local state
-    setNotes((prevNotes) => [newNote, ...prevNotes]);
-  };
-
+    const newNoteRef = await addDoc(notesCollection, newNote);
+    // const noteDoc = await getDoc(doc(db, "notes", newNoteRef.id));
+    // const notesData = noteDoc.data();
+    // console.log(notesData);
+    // setNotes((prevNotes) => [
+    //   ...prevNotes,
+    //   { id: noteDoc.id, body: notesData.body },
+    // ]);
+    setCurrentNoteId(newNoteRef.id);
+  }
   const toggleDarkMode = () => {
     setDarkMode((prevMode) => !prevMode);
   };
@@ -55,14 +57,16 @@ export default function App() {
   // const deleteNote = (noteId) => {
   //   setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
   // };
-  const deleteNote = async (noteId) => {
-    // Delete the note from Firebase
-    await db.collection("notes").doc(noteId).delete();
-
-    // Update the local state
+  async function deleteNote(noteId) {
+    const docRef = doc(db, "notes", noteId);
+    await deleteDoc(docRef);
     setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
-  };
-
+  }
+  useEffect(() => {
+    if (!currentNoteId) {
+      setCurrentNoteId(notes[0]?.id);
+    }
+  }, [notes]);
   return (
     <main>
       {notes.length > 0 ? (
