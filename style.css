@@ -31,6 +31,7 @@ button:focus {
 .sidebar {
     width: 20%;
     height: 100vh;
+    border: 3px solid black;
 }
 
 .sidebar--note {
@@ -277,7 +278,7 @@ section.dark .toggler--slider {
     background: black;
     color: white;
     position: relative;
-   
+   height: 100vh;
 
 }
 /* Dark mode styles */
