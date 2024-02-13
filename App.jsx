@@ -1,67 +1,72 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
 import Split from "react-split";
-import { onSnapshot ,addDoc,doc,deleteDoc} from "firebase/firestore";
-import { notesCollection ,db} from "./firebase"
+import { nanoid } from "nanoid";
+import { onSnapshot, addDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
+import { notesCollection, db } from "./firebase";
 
 export default function App() {
-  const [notes, setNotes] = React.useState([]);
-  const [currentNoteId, setCurrentNoteId] = React.useState("")
+  const [notes, setNotes] = useState([]);
+  const [currentNoteId, setCurrentNoteId] = React.useState("");
+  const [darkMode, setDarkMode] = useState(false);
 
-  const currentNote =
-    notes.find((note) => note.id === currentNoteId) || notes[0];
+  // useEffect(() => {
+  //   localStorage.setItem("notes", JSON.stringify(notes));
+  // }, [notes]);
+  useEffect(() => {
+    const unsubscribe = onSnapshot(notesCollection, function (snapshot) {
+      const notesArr = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setNotes(notesArr);
+    });
+    return unsubscribe;
+  }, []);
+  // console.log(notes);
 
-    React.useEffect(() => {
-      const unsubscribe = onSnapshot(notesCollection, function(snapshot) {
-          // Sync up our local notes array with the snapshot data
-          const notesArr = snapshot.docs.map(doc => ({
-              ...doc.data(),
-              id: doc.id
-          }))
-          setNotes(notesArr)
-      })
-      return unsubscribe
-  }, [])
+  // const createNewNote = () => {
+  //   const newNote = {
+  //     id: nanoid(),
+  //     body: "# Type your markdown note's title here",
+  //   };
+  //   setNotes((prevNotes) => [newNote, ...prevNotes]);
+  //   setCurrentNoteId(newNote.id);
+  // };
 
   async function createNewNote() {
     const newNote = {
-        body: "# Type your markdown note's title here",
-        voice: "",
-    }
-    const newNoteRef = await addDoc(notesCollection, newNote)
-    setCurrentNoteId(newNoteRef.id)
-}
+      body: "# Type your markdown note's title here",
+    };
 
-  // toggle func
-  React.useEffect(() => {
-    if (!currentNoteId) {
-        setCurrentNoteId(notes[0]?.id)
-    }
-}, [notes])
-  const [darkMode, setDarkMode] = React.useState(false);
-  const [tempNoteText, setTempNoteText] = useState("");
-  function toggleDarkMode() {
+    const newNoteRef = await addDoc(notesCollection, newNote);
+    // const noteDoc = await getDoc(doc(db, "notes", newNoteRef.id));
+    // const notesData = noteDoc.data();
+    // console.log(notesData);
+    // setNotes((prevNotes) => [
+    //   ...prevNotes,
+    //   { id: noteDoc.id, body: notesData.body },
+    // ]);
+    setCurrentNoteId(newNoteRef.id);
+  }
+  const toggleDarkMode = () => {
     setDarkMode((prevMode) => !prevMode);
-  }
+  };
 
-  async function updateNote(text) {
-    try {
-      const docRef = doc(db, "notes", currentNoteId);
-      await setDoc(docRef, { body: text}, {voice: tempNoteText }, { merge: true });
-      console.log("Note updated successfully!");
-    } catch (error) {
-      console.error("Error updating note:", error);
-    }
-  }
-  
+  // const deleteNote = (noteId) => {
+  //   setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
+  // };
   async function deleteNote(noteId) {
-    const docRef = doc(db, "notes", noteId)
-    await deleteDoc(docRef)
-}
-  // new interface
-//   console.log(currentNote);
-//   console.log(notes);
+    const docRef = doc(db, "notes", noteId);
+    await deleteDoc(docRef);
+    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
+  }
+  useEffect(() => {
+    if (!currentNoteId) {
+      setCurrentNoteId(notes[0]?.id);
+    }
+  }, [notes]);
   return (
     <main>
       {notes.length > 0 ? (
@@ -69,20 +74,20 @@ export default function App() {
           <Sidebar
             darkMode={darkMode}
             notes={notes}
-            currentNote={currentNote}
             setCurrentNoteId={setCurrentNoteId}
+            currentNoteId={currentNoteId}
             newNote={createNewNote}
             deleteNote={deleteNote}
             toggleDarkMode={toggleDarkMode}
           />
+          {currentNoteId && notes.length > 0 && (
             <Editor
-              // toggle
               darkMode={darkMode}
-              currentNote={currentNote}
-              updateNote={updateNote}
-              tempNoteText={tempNoteText}
-              setTempNoteText={setTempNoteText}
+              currentNoteId={currentNoteId}
+              notes={notes}
+              setNotes={setNotes}
             />
+          )}
         </Split>
       ) : (
         <div className="no-notes">
